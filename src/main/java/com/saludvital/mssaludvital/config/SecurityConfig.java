@@ -101,6 +101,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/admin/pacientes").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/admin/pacientes/*").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/admin/pacientes/*").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/admin/pacientes/*").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.GET, "/admin/pacientes/*").hasRole("ADMIN") 
                 
                 // Médico endpoints - Solo MEDICO (algunos también ADMIN)
                 .requestMatchers("/medico/perfil").hasRole("MEDICO")

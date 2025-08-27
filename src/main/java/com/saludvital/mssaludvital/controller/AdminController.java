@@ -27,8 +27,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/admin")
@@ -292,5 +295,55 @@ public class AdminController {
             return ResponseEntity.badRequest().body(new ApiResponse(false, ex.getMessage()));
         }
     }
+    
+    @GetMapping("/paciente/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> getPacienteCompletoById(@PathVariable Long id) {
+        Paciente paciente = pacienteService.findById(id)
+                .orElseThrow(() -> new RuntimeException("Paciente no encontrado"));
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("id", paciente.getId());
+        response.put("nombre", paciente.getNombre());
+        response.put("numeroIdentificacion", paciente.getNumeroIdentificacion());
+        response.put("fechaNacimiento", paciente.getFechaNacimiento());
+        response.put("telefono", paciente.getTelefono());
+        response.put("direccion", paciente.getDireccion());
+
+        if (paciente.getUsuario() != null) {
+            Map<String, Object> userData = new HashMap<>();
+            userData.put("id", paciente.getUsuario().getId());
+            userData.put("email", paciente.getUsuario().getEmail());
+            userData.put("roles", paciente.getUsuario().getRoles().stream()
+                    .map(r -> r.getName()).toList());
+            response.put("usuario", userData);
+        }
+
+        return ResponseEntity.ok(new ApiResponse(true, "Paciente obtenido exitosamente", response));
+    }
+    
+    @PutMapping("/paciente/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> actualizarPacienteCompleto(@PathVariable Long id, 
+                                                        @RequestBody Map<String, Object> request) {
+        Paciente paciente = pacienteService.updatePaciente(
+            id,
+            (String) request.get("nombre"),
+            (String) request.get("numeroIdentificacion"),
+            LocalDate.parse((String) request.get("fechaNacimiento")),
+            (String) request.get("telefono"),
+            (String) request.get("direccion")
+        );
+
+        if (request.containsKey("email") && paciente.getUsuario() != null) {
+            String email = (String) request.get("email");
+            paciente.getUsuario().setEmail(email);
+            userService.save(paciente.getUsuario());
+        }
+
+        return ResponseEntity.ok(new ApiResponse(true, "Paciente actualizado exitosamente", paciente));
+    }
+    
+    
     
 }
