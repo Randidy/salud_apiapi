@@ -1,0 +1,39 @@
+# Archivos del sistema de Windows
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+ehthumbs.db
+*.cab
+*.msi
+*.msm
+*.msp
+
+# Archivos temporales
+*.tmp
+*.log
+*.bak
+*.swp
+~$*
+
+# Configuración de IDEs comunes
+.vscode/
+.idea/
+*.suo
+*.user
+*.sln
+*.dbmdl
+
+# Archivos de compilación
+bin/
+obj/
+dist/
+build/
+
+# Node.js (si usas)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Entornos de desarrollo
+.env
