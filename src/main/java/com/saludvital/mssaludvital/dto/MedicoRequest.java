@@ -11,7 +11,7 @@ public class MedicoRequest {
         private String password;
         private com.saludvital.mssaludvital.enums.Especialidad especialidad;
         private java.math.BigDecimal tarifaConsulta;
-
+//priemra subida
         // Getters y setters
         public String getNombre() { return nombre; }
         public void setNombre(String nombre) { this.nombre = nombre; }
