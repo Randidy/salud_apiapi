@@ -1,0 +1,921 @@
+openapi: 3.0.3
+info:
+  title: Sistema de Gestión Médica - Salud Vital API
+  description: |
+    API REST para el sistema de gestión médica integral. 
+    Permite la gestión de pacientes, médicos, citas médicas y recetas.
+    
+    ## Usuarios Predefinidos para Pruebas:
+    
+    ### 👑 **ADMIN**
+    - **Email**: `admin@saludvital.com`
+    - **Password**: `admin123`
+    
+    ### 🩺 **MÉDICO** 
+    - **Email**: `medico@saludvital.com`
+    - **Password**: `medico123`
+    
+    ### 👤 **PACIENTE**
+    - **Email**: `paciente@saludvital.com`
+    - **Password**: `paciente123`
+    
+    ## Flujo de Autenticación:
+    1. Hacer login con alguno de los usuarios predefinidos
+    2. Copiar el `accessToken` de la respuesta
+    3. Usar en header: `Authorization: Bearer {accessToken}`
+  version: 1.0.0
+  contact:
+    name: Equipo de Desarrollo
+    email: dev@saludvital.com
+  license:
+    name: MIT License
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8081/api
+    description: Servidor de Desarrollo
+
+security:
+  - BearerAuth: []
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT Bearer Token. Ejemplo 'Bearer {token}'
+
+  schemas:
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: "paciente@saludvital.com"
+        password:
+          type: string
+          example: "paciente123"
+
+    SignUpRequest:
+      type: object
+      required:
+        - name
+        - email
+        - password
+        - numeroIdentificacion
+        - fechaNacimiento
+      properties:
+        name:
+          type: string
+          example: "Juan Pérez"
+        email:
+          type: string
+          format: email
+          example: "juan.perez@email.com"
+        password:
+          type: string
+          minLength: 6
+          example: "123456"
+        numeroIdentificacion:
+          type: string
+          example: "12345678"
+        fechaNacimiento:
+          type: string
+          format: date
+          example: "1990-05-15"
+
+    JwtAuthenticationResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiJ9..."
+        tokenType:
+          type: string
+          example: "Bearer"
+        userInfo:
+          $ref: '#/components/schemas/UserInfoResponse'
+
+    UserInfoResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        name:
+          type: string
+          example: "Juan Pérez"
+        email:
+          type: string
+          example: "juan.perez@email.com"
+        roles:
+          type: array
+          items:
+            type: string
+          example: ["ROLE_PACIENTE"]
+
+    CitaRequest:
+      type: object
+      required:
+        - medicoId
+        - fecha
+        - hora
+      properties:
+        medicoId:
+          type: integer
+          format: int64
+          example: 1
+        fecha:
+          type: string
+          format: date
+          example: "2024-12-20"
+        hora:
+          type: string
+          format: time
+          example: "10:00:00"
+        motivo:
+          type: string
+          example: "Consulta general"
+
+    CitaResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        fecha:
+          type: string
+          format: date
+          example: "2024-12-20"
+        hora:
+          type: string
+          format: time
+          example: "10:00:00"
+        pacienteNombre:
+          type: string
+          example: "Juan Pérez"
+        medicoNombre:
+          type: string
+          example: "Dr. Carlos Rodríguez"
+        especialidad:
+          type: string
+          example: "Cardiología"
+        estado:
+          type: string
+          enum: [PROGRAMADA, CANCELADA, COMPLETADA]
+          example: "PROGRAMADA"
+        motivo:
+          type: string
+          example: "Consulta general"
+        tarifaAplicada:
+          type: number
+          format: decimal
+          example: 150.00
+
+    RecetaRequest:
+      type: object
+      required:
+        - pacienteId
+        - items
+      properties:
+        pacienteId:
+          type: integer
+          format: int64
+          example: 1
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ItemRecetaRequest'
+
+    ItemRecetaRequest:
+      type: object
+      required:
+        - medicamentoId
+        - dosis
+        - frecuencia
+      properties:
+        medicamentoId:
+          type: integer
+          format: int64
+          example: 1
+        dosis:
+          type: string
+          example: "500mg"
+        frecuencia:
+          type: string
+          example: "Cada 8 horas"
+
+    Medicamento:
+      type: object
+      required:
+        - nombre
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        nombre:
+          type: string
+          example: "Paracetamol"
+        descripcion:
+          type: string
+          example: "Analgésico y antipirético"
+
+    ApiResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Operación exitosa"
+        data:
+          type: object
+
+    Error:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "Error en la operación"
+
+paths:
+  /auth/login:
+    post:
+      tags:
+        - 🔐 Autenticación
+      summary: Iniciar sesión
+      description: |
+        Autentica usuario y obtiene token JWT.
+        
+        **Usuarios predefinidos:**
+        - Admin: `admin@saludvital.com` / `admin123`
+        - Médico: `medico@saludvital.com` / `medico123`
+        - Paciente: `paciente@saludvital.com` / `paciente123`
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            examples:
+              admin:
+                summary: Login como Admin
+                value:
+                  email: "admin@saludvital.com"
+                  password: "admin123"
+              medico:
+                summary: Login como Médico
+                value:
+                  email: "medico@saludvital.com"
+                  password: "medico123"
+              paciente:
+                summary: Login como Paciente
+                value:
+                  email: "paciente@saludvital.com"
+                  password: "paciente123"
+      responses:
+        '200':
+          description: Login exitoso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JwtAuthenticationResponse'
+        '401':
+          description: Credenciales inválidas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/register:
+    post:
+      tags:
+        - 🔐 Autenticación
+      summary: Registrar paciente
+      description: Registra nuevo paciente en el sistema
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignUpRequest'
+      responses:
+        '200':
+          description: Registro exitoso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '400':
+          description: Error en los datos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /paciente/perfil:
+    get:
+      tags:
+        - 👤 Pacientes
+      summary: Ver perfil del paciente
+      description: Obtiene la información del perfil del paciente autenticado
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Perfil obtenido exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: No autenticado
+        '403':
+          description: Sin permisos (solo pacientes)
+
+  /paciente/expediente:
+    get:
+      tags:
+        - 👤 Pacientes
+      summary: Ver expediente médico
+      description: Obtiene el expediente médico completo del paciente
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Expediente obtenido exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /medico/disponibles:
+    get:
+      tags:
+        - 🩺 Médicos
+      summary: Listar médicos disponibles
+      description: Obtiene la lista de médicos activos y disponibles
+      responses:
+        '200':
+          description: Médicos disponibles obtenidos exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /medico/perfil:
+    get:
+      tags:
+        - 🩺 Médicos
+      summary: Ver perfil del médico
+      description: Obtiene la información del perfil del médico autenticado
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Perfil obtenido exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '403':
+          description: Sin permisos (solo médicos)
+
+  /medico/{id}:
+    get:
+      tags:
+        - 🩺 Médicos
+      summary: Obtener médico por ID
+      description: Obtiene la información de un médico específico
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          example: 1
+      responses:
+        '200':
+          description: Médico obtenido exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '404':
+          description: Médico no encontrado
+
+  /citas/nueva:
+    post:
+      tags:
+        - 📅 Citas
+      summary: Solicitar nueva cita
+      description: |
+        Crear una nueva cita médica (solo pacientes).
+        
+        **Validaciones:**
+        - Máximo 3 citas por paciente por día
+        - No horarios duplicados para el mismo médico
+        - Solo en horarios de atención del médico
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CitaRequest'
+      responses:
+        '200':
+          description: Cita creada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '400':
+          description: Error de validación (máximo 3 citas, horario ocupado, etc.)
+        '403':
+          description: Sin permisos (solo pacientes)
+
+  /citas/mis-citas:
+    get:
+      tags:
+        - 📅 Citas
+      summary: Ver mis citas
+      description: Obtiene las citas del paciente autenticado
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Citas obtenidas exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /citas/medico:
+    get:
+      tags:
+        - 📅 Citas
+      summary: Ver citas del médico
+      description: Obtiene las citas del médico autenticado
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Citas obtenidas exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '403':
+          description: Sin permisos (solo médicos)
+
+  /citas/{id}:
+    put:
+      tags:
+        - 📅 Citas
+      summary: Modificar cita
+      description: |
+        Actualiza una cita existente.
+        
+        **Validación:** Modificación con al menos 2 horas de anticipación.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CitaRequest'
+      responses:
+        '200':
+          description: Cita actualizada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '400':
+          description: No se puede modificar (menos de 2 horas de anticipación)
+
+  /citas/{id}/cancelar:
+    put:
+      tags:
+        - 📅 Citas
+      summary: Cancelar cita
+      description: |
+        Cancela una cita existente.
+        
+        **Validación:** Cancelación con al menos 2 horas de anticipación.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          example: 1
+      responses:
+        '200':
+          description: Cita cancelada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /citas/{id}/completar:
+    put:
+      tags:
+        - 📅 Citas
+      summary: Completar cita
+      description: Marca una cita como completada (solo médicos)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          example: 1
+      responses:
+        '200':
+          description: Cita completada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '403':
+          description: Sin permisos (solo médicos)
+
+  /recetas/nueva:
+    post:
+      tags:
+        - 💊 Recetas
+      summary: Emitir nueva receta
+      description: |
+        Crear una nueva receta médica (solo médicos).
+        
+        **Validaciones:**
+        - Medicamentos deben existir en el catálogo
+        - No se pueden recetar medicamentos a los que el paciente es alérgico
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecetaRequest'
+      responses:
+        '200':
+          description: Receta creada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '400':
+          description: Error de validación (alergia, medicamento no existe)
+        '403':
+          description: Sin permisos (solo médicos)
+
+  /recetas/mis-recetas:
+    get:
+      tags:
+        - 💊 Recetas
+      summary: Ver mis recetas
+      description: Obtiene las recetas del paciente autenticado
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Recetas obtenidas exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /recetas/medico:
+    get:
+      tags:
+        - 💊 Recetas
+      summary: Ver recetas emitidas
+      description: Obtiene las recetas emitidas por el médico autenticado
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Recetas obtenidas exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '403':
+          description: Sin permisos (solo médicos)
+
+  /recetas/{id}:
+    get:
+      tags:
+        - 💊 Recetas
+      summary: Ver receta específica
+      description: Obtiene los detalles de una receta específica
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          example: 1
+      responses:
+        '200':
+          description: Receta obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /medicamentos:
+    get:
+      tags:
+        - 🧪 Medicamentos
+      summary: Listar medicamentos
+      description: Obtiene la lista de todos los medicamentos
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Medicamentos obtenidos exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+    post:
+      tags:
+        - 🧪 Medicamentos
+      summary: Crear medicamento
+      description: Registra un nuevo medicamento (solo admin)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Medicamento'
+      responses:
+        '200':
+          description: Medicamento creado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '403':
+          description: Sin permisos (solo admin)
+
+  /medicamentos/buscar:
+    get:
+      tags:
+        - 🧪 Medicamentos
+      summary: Buscar medicamentos
+      description: Busca medicamentos por nombre
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: nombre
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "paracetamol"
+      responses:
+        '200':
+          description: Medicamentos encontrados exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /medicamentos/{id}:
+    get:
+      tags:
+        - 🧪 Medicamentos
+      summary: Obtener medicamento por ID
+      description: Obtiene un medicamento específico por su ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          example: 1
+      responses:
+        '200':
+          description: Medicamento obtenido exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+    put:
+      tags:
+        - 🧪 Medicamentos
+      summary: Actualizar medicamento
+      description: Actualiza un medicamento existente (solo admin)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Medicamento'
+      responses:
+        '200':
+          description: Medicamento actualizado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '403':
+          description: Sin permisos (solo admin)
+
+  /admin/pacientes:
+    get:
+      tags:
+        - ⚙️ Administración
+      summary: Listar todos los pacientes
+      description: Obtiene la lista completa de pacientes (solo admin)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Pacientes obtenidos exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '403':
+          description: Sin permisos (solo admin)
+
+    post:
+      tags:
+        - ⚙️ Administración
+      summary: Registrar nuevo paciente
+      description: Crea un nuevo paciente en el sistema (solo admin)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - nombre
+                - email
+                - password
+                - numeroIdentificacion
+                - fechaNacimiento
+              properties:
+                nombre:
+                  type: string
+                  example: "María García"
+                email:
+                  type: string
+                  format: email
+                  example: "maria.garcia@email.com"
+                password:
+                  type: string
+                  example: "123456"
+                numeroIdentificacion:
+                  type: string
+                  example: "87654321"
+                fechaNacimiento:
+                  type: string
+                  format: date
+                  example: "1985-10-20"
+      responses:
+        '200':
+          description: Paciente creado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '403':
+          description: Sin permisos (solo admin)
+
+  /admin/medicos:
+    post:
+      tags:
+        - ⚙️ Administración
+      summary: Registrar nuevo médico
+      description: Crea un nuevo médico en el sistema (solo admin)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - nombre
+                - apellido
+                - numeroLicencia
+                - email
+                - password
+                - especialidad
+                - tarifaConsulta
+              properties:
+                nombre:
+                  type: string
+                  example: "Dr. Carlos"
+                apellido:
+                  type: string
+                  example: "Rodríguez"
+                numeroLicencia:
+                  type: string
+                  example: "MED123456"
+                telefono:
+                  type: string
+                  example: "+1234567890"
+                email:
+                  type: string
+                  format: email
+                  example: "dr.carlos@hospital.com"
+                password:
+                  type: string
+                  example: "123456"
+                especialidad:
+                  type: string
+                  enum: [CARDIOLOGIA, DERMATOLOGIA, GASTROENTEROLOGIA, GINECOLOGIA, NEUROLOGIA, OFTALMOLOGIA, PEDIATRIA, PSIQUIATRIA, TRAUMATOLOGIA, UROLOGIA, MEDICINA_GENERAL]
+                  example: "CARDIOLOGIA"
+                tarifaConsulta:
+                  type: number
+                  format: decimal
+                  example: 150.00
+      responses:
+        '200':
+          description: Médico creado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '403':
+          description: Sin permisos (solo admin)
+
+tags:
+  - name: 🔐 Autenticación
+    description: Endpoints para autenticación y registro
+  - name: 👤 Pacientes  
+    description: Endpoints para gestión de pacientes
+  - name: 🩺 Médicos
+    description: Endpoints para gestión de médicos
+  - name: 📅 Citas
+    description: Endpoints para gestión de citas médicas
+  - name: 💊 Recetas
+    description: Endpoints para gestión de recetas médicas
+  - name: 🧪 Medicamentos
+    description: Endpoints para gestión de medicamentos
+  - name: ⚙️ Administración
+    description: Endpoints para administración del sistema

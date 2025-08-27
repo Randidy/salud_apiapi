@@ -1,0 +1,1162 @@
+{
+	"info": {
+		"_postman_id": "12345678-1234-1234-1234-123456789012",
+		"name": "🏥 MS SaludVital - Sistema Médico",
+		"description": "Colección completa de endpoints para el sistema de gestión médica MS SaludVital.\n\n**🚀 Uso:**\n1. Importar esta colección en Postman\n2. Configurar la variable {{baseUrl}} = http://localhost:8081\n3. Hacer login con cualquier usuario para obtener token\n4. El token se guarda automáticamente en la variable {{authToken}}\n5. Probar todos los endpoints según los roles\n\n**👥 Usuarios de prueba:**\n- 👑 ADMIN: admin@saludvital.com / admin123\n- 🩺 MÉDICO: medico@saludvital.com / medico123  \n- 👤 PACIENTE: paciente@saludvital.com / paciente123\n\n**📚 Documentación:** https://localhost:8081/swagger-ui.html",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "12345678"
+	},
+	"item": [
+		{
+			"name": "🔐 Autenticación",
+			"item": [
+				{
+					"name": "👑 Login Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const responseJson = pm.response.json();",
+									"    pm.environment.set('authToken', responseJson.token);",
+									"    pm.environment.set('userId', responseJson.user.id);",
+									"    pm.environment.set('userRole', responseJson.user.roles[0]);",
+									"    console.log('Token guardado:', responseJson.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"admin@saludvital.com\",\n  \"password\": \"admin123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login como administrador para obtener token JWT con permisos completos"
+					}
+				},
+				{
+					"name": "🩺 Login Médico",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const responseJson = pm.response.json();",
+									"    pm.environment.set('authToken', responseJson.token);",
+									"    pm.environment.set('userId', responseJson.user.id);",
+									"    pm.environment.set('userRole', responseJson.user.roles[0]);",
+									"    console.log('Token guardado:', responseJson.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"medico@saludvital.com\",\n  \"password\": \"medico123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login como médico para obtener token JWT con permisos médicos"
+					}
+				},
+				{
+					"name": "👤 Login Paciente",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const responseJson = pm.response.json();",
+									"    pm.environment.set('authToken', responseJson.token);",
+									"    pm.environment.set('userId', responseJson.user.id);",
+									"    pm.environment.set('userRole', responseJson.user.roles[0]);",
+									"    console.log('Token guardado:', responseJson.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"paciente@saludvital.com\",\n  \"password\": \"paciente123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login como paciente para obtener token JWT con permisos de autogestión"
+					}
+				},
+				{
+					"name": "📝 Registrar Nuevo Paciente",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Juan Pérez\",\n  \"email\": \"juan.perez@email.com\",\n  \"password\": \"password123\",\n  \"numeroIdentificacion\": \"87654321\",\n  \"fechaNacimiento\": \"1985-03-20\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						},
+						"description": "Registrar un nuevo paciente en el sistema (endpoint público)"
+					}
+				}
+			],
+			"description": "Endpoints para autenticación y registro de usuarios"
+		},
+		{
+			"name": "👑 Administración (Solo ADMIN)",
+			"item": [
+				{
+					"name": "👥 Gestión de Pacientes",
+					"item": [
+						{
+							"name": "📋 Ver Todos los Pacientes",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{authToken}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/admin/pacientes",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"admin",
+										"pacientes"
+									]
+								},
+								"description": "Obtener lista completa de pacientes registrados (solo admin)"
+							}
+						},
+						{
+							"name": "➕ Crear Nuevo Paciente",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{authToken}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"nombre\": \"María González\",\n  \"email\": \"maria.gonzalez@email.com\",\n  \"password\": \"paciente123\",\n  \"numeroIdentificacion\": \"12345678\",\n  \"fechaNacimiento\": \"1990-05-15\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/admin/pacientes",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"admin",
+										"pacientes"
+									]
+								},
+								"description": "Crear un nuevo paciente desde panel de administración"
+							}
+						},
+						{
+							"name": "✏️ Actualizar Paciente",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{authToken}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"nombre\": \"María González Updated\",\n  \"numeroIdentificacion\": \"12345678\",\n  \"fechaNacimiento\": \"1990-05-15\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/admin/pacientes/1",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"admin",
+										"pacientes",
+										"1"
+									]
+								},
+								"description": "Actualizar información de un paciente existente"
+							}
+						}
+					]
+				},
+				{
+					"name": "👨‍⚕️ Gestión de Médicos",
+					"item": [
+						{
+							"name": "➕ Crear Nuevo Médico",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{authToken}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"nombre\": \"Carlos\",\n  \"apellido\": \"Mendoza\",\n  \"numeroLicencia\": \"MED12345\",\n  \"telefono\": \"+1234567890\",\n  \"email\": \"carlos.mendoza@hospital.com\",\n  \"password\": \"medico123\",\n  \"especialidad\": \"CARDIOLOGIA\",\n  \"tarifaConsulta\": 150.00\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/admin/medicos",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"admin",
+										"medicos"
+									]
+								},
+								"description": "Crear un nuevo médico en el sistema"
+							}
+						},
+						{
+							"name": "✏️ Actualizar Médico",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{authToken}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"nombre\": \"Carlos\",\n  \"apellido\": \"Mendoza\",\n  \"numeroLicencia\": \"MED12345\",\n  \"telefono\": \"+1234567890\",\n  \"email\": \"carlos.mendoza@hospital.com\",\n  \"especialidad\": \"CARDIOLOGIA\",\n  \"tarifaConsulta\": 175.00,\n  \"estado\": \"ACTIVO\",\n  \"disponible\": true\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/admin/medicos/1",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"admin",
+										"medicos",
+										"1"
+									]
+								},
+								"description": "Actualizar información de un médico existente"
+							}
+						}
+					]
+				}
+			],
+			"description": "Endpoints exclusivos para administradores del sistema"
+		},
+		{
+			"name": "👤 Pacientes",
+			"item": [
+				{
+					"name": "👤 Ver Mi Perfil",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/paciente/perfil",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"paciente",
+								"perfil"
+							]
+						},
+						"description": "Ver información del perfil del paciente autenticado"
+					}
+				},
+				{
+					"name": "📋 Ver Mi Expediente Médico",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/paciente/expediente",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"paciente",
+								"expediente"
+							]
+						},
+						"description": "Ver expediente médico completo del paciente (historial, alergias, diagnósticos)"
+					}
+				}
+			],
+			"description": "Endpoints para gestión personal de pacientes"
+		},
+		{
+			"name": "🩺 Médicos",
+			"item": [
+				{
+					"name": "👨‍⚕️ Ver Mi Perfil Médico",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/medico/perfil",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"medico",
+								"perfil"
+							]
+						},
+						"description": "Ver perfil profesional del médico autenticado"
+					}
+				},
+				{
+					"name": "🏥 Ver Médicos Disponibles",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/medico/disponibles",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"medico",
+								"disponibles"
+							]
+						},
+						"description": "Listar médicos activos y disponibles para citas (accesible por todos los roles)"
+					}
+				},
+				{
+					"name": "📋 Ver Todos los Médicos (Admin)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/medico",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"medico"
+							]
+						},
+						"description": "Ver lista completa de médicos (solo administradores)"
+					}
+				},
+				{
+					"name": "🔍 Ver Médico por ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/medico/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"medico",
+								"1"
+							]
+						},
+						"description": "Obtener información detallada de un médico específico"
+					}
+				}
+			],
+			"description": "Endpoints para información y gestión de médicos"
+		},
+		{
+			"name": "📅 Gestión de Citas",
+			"item": [
+				{
+					"name": "➕ Solicitar Nueva Cita (Paciente)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"medicoId\": 1,\n  \"fecha\": \"2024-01-15\",\n  \"hora\": \"09:00\",\n  \"motivo\": \"Consulta general por dolor de cabeza\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/citas/nueva",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"citas",
+								"nueva"
+							]
+						},
+						"description": "Solicitar nueva cita médica (solo pacientes, máximo 3 por día)"
+					}
+				},
+				{
+					"name": "📅 Ver Mis Citas (Paciente)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/citas/mis-citas",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"citas",
+								"mis-citas"
+							]
+						},
+						"description": "Ver todas las citas del paciente autenticado"
+					}
+				},
+				{
+					"name": "🩺 Ver Citas Asignadas (Médico)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/citas/medico",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"citas",
+								"medico"
+							]
+						},
+						"description": "Ver citas asignadas al médico autenticado"
+					}
+				},
+				{
+					"name": "📊 Ver Todas las Citas (Admin)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/citas",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"citas"
+							]
+						},
+						"description": "Ver todas las citas del sistema (solo administradores)"
+					}
+				},
+				{
+					"name": "✏️ Modificar Cita",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"fecha\": \"2024-01-16\",\n  \"hora\": \"10:00\",\n  \"motivo\": \"Consulta general actualizada\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/citas/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"citas",
+								"1"
+							]
+						},
+						"description": "Modificar cita existente (paciente: solo sus citas, admin: cualquiera) - Requiere 2h anticipación"
+					}
+				},
+				{
+					"name": "❌ Cancelar Cita",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/citas/1/cancelar",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"citas",
+								"1",
+								"cancelar"
+							]
+						},
+						"description": "Cancelar cita existente (paciente: solo sus citas, admin: cualquiera) - Requiere 2h anticipación"
+					}
+				},
+				{
+					"name": "✅ Completar Cita (Médico/Admin)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/citas/1/completar",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"citas",
+								"1",
+								"completar"
+							]
+						},
+						"description": "Marcar cita como completada (solo médicos y administradores)"
+					}
+				}
+			],
+			"description": "Endpoints para gestión completa de citas médicas"
+		},
+		{
+			"name": "💊 Gestión de Recetas",
+			"item": [
+				{
+					"name": "➕ Emitir Nueva Receta (Médico)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"pacienteId\": 1,\n  \"items\": [\n    {\n      \"medicamentoId\": 1,\n      \"dosis\": \"1 tableta\",\n      \"frecuencia\": \"Cada 8 horas por 7 días\"\n    },\n    {\n      \"medicamentoId\": 2,\n      \"dosis\": \"2 tabletas\",\n      \"frecuencia\": \"Cada 12 horas por 5 días\"\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/recetas/nueva",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"recetas",
+								"nueva"
+							]
+						},
+						"description": "Emitir nueva receta médica (solo médicos) - Valida alergias del paciente"
+					}
+				},
+				{
+					"name": "💊 Ver Mis Recetas (Paciente)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/recetas/mis-recetas",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"recetas",
+								"mis-recetas"
+							]
+						},
+						"description": "Ver todas las recetas del paciente autenticado"
+					}
+				},
+				{
+					"name": "🩺 Ver Recetas Emitidas (Médico)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/recetas/medico",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"recetas",
+								"medico"
+							]
+						},
+						"description": "Ver todas las recetas emitidas por el médico autenticado"
+					}
+				},
+				{
+					"name": "📊 Ver Todas las Recetas (Admin)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/recetas",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"recetas"
+							]
+						},
+						"description": "Ver todas las recetas del sistema (solo administradores)"
+					}
+				},
+				{
+					"name": "🔍 Ver Receta Específica",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/recetas/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"recetas",
+								"1"
+							]
+						},
+						"description": "Ver detalles de una receta específica (acceso según permisos por rol)"
+					}
+				}
+			],
+			"description": "Endpoints para gestión de recetas médicas"
+		},
+		{
+			"name": "💉 Gestión de Medicamentos",
+			"item": [
+				{
+					"name": "📋 Listar Medicamentos",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/medicamentos",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"medicamentos"
+							]
+						},
+						"description": "Obtener lista completa de medicamentos disponibles (todos los roles autenticados)"
+					}
+				},
+				{
+					"name": "🔍 Ver Medicamento por ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/medicamentos/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"medicamentos",
+								"1"
+							]
+						},
+						"description": "Obtener información detallada de un medicamento específico"
+					}
+				},
+				{
+					"name": "🔍 Buscar Medicamentos",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/medicamentos/buscar?nombre=ibuprofeno",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"medicamentos",
+								"buscar"
+							],
+							"query": [
+								{
+									"key": "nombre",
+									"value": "ibuprofeno"
+								}
+							]
+						},
+						"description": "Buscar medicamentos por nombre (búsqueda parcial)"
+					}
+				},
+				{
+					"name": "➕ Crear Medicamento (Admin)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Ibuprofeno 600mg\",\n  \"descripcion\": \"Antiinflamatorio no esteroideo para dolor y fiebre\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/medicamentos",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"medicamentos"
+							]
+						},
+						"description": "Crear nuevo medicamento en el catálogo (solo administradores)"
+					}
+				},
+				{
+					"name": "✏️ Actualizar Medicamento (Admin)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Ibuprofeno 600mg Updated\",\n  \"descripcion\": \"Antiinflamatorio no esteroideo para dolor y fiebre - Actualizado\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/medicamentos/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"medicamentos",
+								"1"
+							]
+						},
+						"description": "Actualizar medicamento existente (solo administradores)"
+					}
+				},
+				{
+					"name": "🗑️ Eliminar Medicamento (Admin)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/medicamentos/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"medicamentos",
+								"1"
+							]
+						},
+						"description": "Eliminar medicamento del catálogo (solo administradores)"
+					}
+				}
+			],
+			"description": "Endpoints para gestión del catálogo de medicamentos"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8081",
+			"type": "string"
+		},
+		{
+			"key": "authToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "userId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "userRole",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
